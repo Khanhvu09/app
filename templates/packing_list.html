@@ -1,0 +1,124 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Packing List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f6f9; }
+        .green-row { background-color: #d4edda; }
+        .red-row { background-color: #f8d7da; }
+        .yellow-row { background-color: #fff3cd; }
+        .card { margin-bottom: 2rem; }
+        .toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 1055; }
+        .back-btn { margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+<div class="container py-4">
+    <a href="{{ url_for('upload_dashboard') }}" class="btn btn-outline-secondary back-btn">← Back to Upload Dashboard</a>
+    <h1 class="text-primary mb-4 text-start">📦 Packing List: <strong>{{ filename }}</strong></h1>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="toast-container">
+                {% for msg in messages %}
+                    <div class="toast show text-bg-success border-0 mb-2" role="alert">
+                        <div class="d-flex justify-content-between">
+                            <div class="toast-body">{{ msg }}</div>
+                            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <form method="post" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="barcode" class="form-control" placeholder="Scan or enter barcode..." required autofocus>
+            <button type="submit" class="btn btn-primary">Scan</button>
+        </div>
+    </form>
+
+    <form method="post" class="mb-3">
+        {% if can_start_new_pallet %}
+            <button type="submit" name="new_pallet" value="1" class="btn btn-warning">Start New Pallet</button>
+        {% else %}
+            <div class="alert alert-warning p-2 small mb-2">⚠️ Cannot start a new pallet until items are scanned.</div>
+        {% endif %}
+    </form>
+
+    <form method="post" action="{{ url_for('reset_scanned', filename=filename) }}" class="mb-4">
+        <button type="submit" class="btn btn-danger">Reset Scanned Quantities</button>
+    </form>
+
+    {% for pallet, rows in grouped_rows.items() %}
+        <div class="card shadow-sm">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center text-start">
+                {% if pallet == "Master List" %}
+                    📋 <strong>Master List</strong>
+                {% else %}
+                    📦 <strong>Pallet {{ pallet }}</strong>
+                    <form method="post" action="{{ url_for('delete_pallet', filename=filename, pallet_name=pallet) }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete Pallet</button>
+                    </form>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-bordered table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>PART NUMBER</th>
+                            <th>DESCRIPTION</th>
+                            <th>SALES ORDER</th>
+                            <th>SCANNED QTY</th>
+                            <th>SHIP QTY</th>
+                            <th>ORDER QTY</th>
+                            <th>B/O QTY</th>
+                            {% if pallet != "Master List" %}
+                                <th>Action</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                            {% set scanned = row[3] or 0 %}
+                            {% set ship = row[4] or 0 %}
+                            {% set row_class = "" %}
+                            {% if scanned == ship %}
+                                {% set row_class = "green-row" %}
+                            {% elif scanned > ship %}
+                                {% set row_class = "red-row" %}
+                            {% elif scanned < ship %}
+                                {% set row_class = "yellow-row" %}
+                            {% endif %}
+                            <tr class="{{ row_class }}">
+                                <td>{{ row[0] }}</td>
+                                <td>{{ row[1] }}</td>
+                                <td>{{ row[2] }}</td>
+                                <td>{{ row[3] }}</td>
+                                <td>{{ row[4] }}</td>
+                                <td>{{ row[5] }}</td>
+                                <td>{{ row[7] }}</td>
+                                {% if pallet != "Master List" %}
+                                <td>
+                                    <form method="post" action="{{ url_for('delete_row', filename=filename) }}" onsubmit="return confirm('Delete this row from pallet?');">
+                                        <input type="hidden" name="barcode" value="{{ row[0] }}">
+                                        <input type="hidden" name="pallet" value="{{ pallet }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">🗑</button>
+                                    </form>
+                                </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
