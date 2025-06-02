@@ -1,42 +1,18 @@
+# Packing App
 
-# 📦 Modern Barcode Packing List App
+This Flask app allows barcode scanning into dynamic pallets from Excel files.
 
-## 🚀 Features
-- Upload Excel files with item details
-- Scan barcodes to assign items to dynamically created pallets
-- Master List at top, pallets listed below
-- Live updates to scanned quantities
-- Visual color-coded rows:
-  - Green: Fulfilled
-  - Red: Over shipped
-  - Yellow: Under shipped
-- Delete rows or full pallets
-- Reset all scanned quantities
-- Bootstrap 5 UI with modern styling and icons
+## Features
+- Upload Excel files with item data and ship dates
+- Scan barcodes to build pallets dynamically
+- Master list with live scanned quantity updates
+- Color-coded row highlighting for scanned vs shipped
+- Option to reset scans or delete pallets
 
-## 📄 Excel Format
-| PART NUMBER | DESCRIPTION | SALES ORDER | SCANNED QTY | SHIP QTY | ORDER QTY | PALLET |
-
-Leave SCANNED QTY and PALLET empty initially. The app will update them.
-
-## ▶️ Running the App
-1. Install dependencies:
-
+## How to Run
 ```bash
-pip install flask openpyxl
-```
-
-2. Run the server:
-
-```bash
+pip install -r requirements.txt
 python app.py
 ```
 
-3. Visit [http://127.0.0.1:5000](http://127.0.0.1:5000)
-
-## 📁 Structure
-- `app.py`: Flask backend
-- `templates/`: UI templates
-- `uploads/`: Folder where Excel files are stored
-
-Enjoy a fast, flexible warehouse workflow!
+Then go to http://localhost:5000 in your browser.
